@@ -2,10 +2,6 @@ import json
 import requests
 
 
-ADDRESS = "192.168.0.2"
-API_KEY = "8q2z5320JbwclaU7Pa3it3qDOuUPrx4HeuP8NP0D"
-
-
 RULES = 'rules'
 SCENES = 'scenes'
 LIGHTS = 'lights'
@@ -27,35 +23,44 @@ def pretty_print(obj):
     return json.dumps(obj, sort_keys=True, indent=4)
 
 
-def build_request(paths=[]):
-    http_prefix = "http://{}/api/{}/".format(ADDRESS, API_KEY)
-    return http_prefix + "/".join(paths)
-
-
-def json_get(paths=[]):
-    return json.loads(requests.get(build_request(paths)).text)
-
-
-def delete_entry(api_field, field_id):
-    result = json.loads(requests.delete(build_request([api_field, str(field_id)])).text)
-    if result[0].keys()[0] != 'success':
-        raise ApiException(pretty_print(result))
-
-
 class ApiException(Exception):
     pass
 
 
 class Hue(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, address, api_key):
+        self._address = address
+        self._api_key = api_key
 
+    def get_rules(self):
+        return self.json_get([RULES])
 
-tree = json_get()
-#delete_entry(RULES, 1)
-#print tree.keys()
-#print tree[SENSORS]['12']
-print pretty_print(tree[SENSORS]['12'])
-#for rule_id in tree[RULES]:
-    #pretty_print(tree[RULES][rule_id]['name'])
+    def get_sensors(self):
+        return self.json_get([SENSORS])
+
+    def build_request(self, paths=[]):
+        http_prefix = "http://{}/api/{}/".format(self._address, self._api_key)
+        return http_prefix + "/".join(paths)
+
+    def delete_entry(self, api_field, field_id):
+        result = json.loads(requests.delete(self.build_request([api_field, str(field_id)])).text)
+        if result[0].keys()[0] != 'success':
+            raise ApiException(pretty_print(result))
+
+    def json_get(self, paths=[]):
+        return json.loads(requests.get(self.build_request(paths)).text)
+
+    def create_entry(self, api_field, data):
+        result = json.loads(requests.post(self.build_request([api_field]), data=json.dumps(data)).text)
+        if result[0].keys()[0] == 'success':
+            return result[0]['success']['id']
+        else:
+            raise ApiException(pretty_print(result))
+
+    def id_from_name(self, api_field, name):
+        tree = self.json_get(paths=[api_field])
+        for key in tree:
+            if tree[key]['name'] == name:
+                return key
+        raise LookupError('Error: ID not found for name {}'.format(name))
