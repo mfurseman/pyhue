@@ -23,6 +23,34 @@ def pretty_print(obj):
     return json.dumps(obj, sort_keys=True, indent=4)
 
 
+def build_condition(address, operator, value=None):
+    condition = {
+        "address": address,
+        "operator": operator,
+    }
+    if value:
+        condition["value"] = value
+    return condition
+
+
+def build_action(address, method, body):
+    action = {
+        "address": address,
+        "method": method,
+        "body": body,
+    }
+    return action
+
+
+def build_rule(name, conditions, actions):
+    rule_data = {
+        "name": name,
+        "conditions": conditions,
+        "actions": actions,
+    }
+    return rule_data
+
+
 class ApiException(Exception):
     pass
 

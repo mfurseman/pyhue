@@ -17,23 +17,7 @@ HALLWAY_LIGHTS = 'Hallway & Landing'
 #tree = hue.json_get()
 #delete_entry(RULES, 1)
 #print pyhue.pretty_print(tree[pyhue.SENSORS])
-rule_data = {
-    "name": "Test Rule",
-    "conditions": [{
-            "address": "/sensors/12/state/buttonevent",
-            "operator": "eq",
-            "value": "1",
-        },{
-            "address": "/sensors/12/state/lastupdated",
-            "operator": "dx",
-        }],
-    "actions": [
-        {
-            "address": "/groups/0/action",
-            "method": "PUT",
-            "body": {"on": True}
-        }],
-    }
+
 #hue.create_entry(pyhue.RULES, rule_data)
 #print tree[SENSORS]['12']
 #print pretty_print(tree[SENSORS]['12'])
@@ -67,12 +51,21 @@ sensors = hue.get_sensors()
 for switch_id in dimmer_switch_ids:
     name = sensors[switch_id]['name']
     print 'Creating rules for switch {}'.format(name)
-
-    rule_data['name'] = '{} - {}'.format(name, 'Short On')
-    rule_data['conditions'][0]['address'] = "/{}/{}/state/buttonevent".format(pyhue.SENSORS, switch_id)
-    rule_data['conditions'][0]['value'] = '1002'
-    rule_data['conditions'][1]['address'] = "/{}/{}/state/lastupdated".format(pyhue.SENSORS, switch_id)
-    rule_data['actions'][0]['body']['on'] = True
+    rule_data = pyhue.build_rule(
+        name='{} - {}'.format(name, 'Short On'),
+        conditions=[
+            pyhue.build_condition(
+                address="/{}/{}/state/buttonevent".format(pyhue.SENSORS, switch_id),
+                operator='eq',
+                value='1002'),
+            pyhue.build_condition(
+                address="/{}/{}/state/lastupdated".format(pyhue.SENSORS, switch_id),
+                operator='dx')],
+        actions=[
+            pyhue.build_action(
+                address="/groups/0/action",
+                method="PUT",
+                body={"on": True})])
     hue.create_entry(pyhue.RULES, rule_data)
 
     rule_data['name'] = '{} - {}'.format(name, 'Short Off')
