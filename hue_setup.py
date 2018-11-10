@@ -29,6 +29,7 @@ HALLWAY_LIGHTS = 'Hallway & Landing'
 hue = pyhue.Hue(ADDRESS, API_KEY)
 
 rules = hue.get_rules()
+# Collect rules that are declared for ESP8266
 esp_rules = {}
 for rule_id in rules.keys():
     if 'ESP8266' in rules[rule_id]['name']:
