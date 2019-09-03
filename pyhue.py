@@ -67,6 +67,9 @@ class Hue(object):
     def get_sensors(self):
         return self.json_get([SENSORS])
 
+    def get_lights(self):
+        return self.json_get([LIGHTS])
+
     def build_request(self, paths=[]):
         http_prefix = "http://{}/api/{}/".format(self._address, self._api_key)
         return http_prefix + "/".join(paths)
